@@ -1,0 +1,8 @@
+---
+title: "H10 - Existe recorrência de compra (cliente fiel) em casos de boa avaliação do cliente em pesquisa de satisfação (>=8)"
+output: 
+  html_document:
+    self_contained: true
+---
+
+## Escreva o conteúdo aqui

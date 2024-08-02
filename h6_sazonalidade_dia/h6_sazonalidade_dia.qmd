@@ -1,0 +1,8 @@
+---
+title: "H6 - Enfrentamos sazonalidades conforme o dia da semana"
+output: 
+  html_document:
+    self_contained: true
+---
+
+## Escreva o conteúdo aqui

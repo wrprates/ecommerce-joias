@@ -1,0 +1,8 @@
+---
+title: "H7 - Existe um pico de vendas em datas especiais (ex.: dia dos namorados, natal, black friday)"
+output: 
+  html_document:
+    self_contained: true
+---
+
+## Escreva o conteúdo aqui

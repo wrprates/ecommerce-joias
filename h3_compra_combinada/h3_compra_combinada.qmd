@@ -1,0 +1,8 @@
+---
+title: "H3 - Existe algum tipo de relação entre produtos que gera uma compra 'combinada'"
+output: 
+  html_document:
+    self_contained: true
+---
+
+## Escreva o conteúdo aqui
