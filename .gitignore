@@ -1,0 +1,3 @@
+# Ignorar arquivos .xls e .xlsx no diretório _data/raw
+_data/raw/*.xls
+_data/raw/*.xlsx
