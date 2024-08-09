@@ -1,9 +1,19 @@
 # Carregar as bibliotecas necessárias
 library(readxl)
 library(dplyr)
+library(digest)
+
+# Função para anonimizar email e criar id_cliente
+anonymize_email <- function(email_column) {
+  sapply(email_column, function(x) digest(x, algo = "sha256"))
+}
 
 # Carregar e processar dados de "e_commerce_carrinhos"
 e_commerce_carrinhos <- read_excel("./_data/raw/e_commerce_carrinhos.xlsx")
+
+# Anonimizar email_cliente e criar a coluna id_cliente
+e_commerce_carrinhos <- e_commerce_carrinhos %>%
+  mutate(id_cliente = anonymize_email(email_cliente))
 
 # Selecionar colunas específicas para descartar do dataframe
 e_commerce_carrinhos <- e_commerce_carrinhos %>% 
@@ -24,6 +34,10 @@ write.csv(e_commerce_carrinhos, "./_data/clean/e_commerce_carrinhos.csv", row.na
 
 # Carregar e processar dados de "e_commerce_pedidos"
 e_commerce_pedidos <- read_excel("./_data/raw/e_commerce_pedidos.xlsx")
+
+# Anonimizar cliente_email e criar a coluna id_cliente
+e_commerce_pedidos <- e_commerce_pedidos %>%
+  mutate(id_cliente = anonymize_email(cliente_email))
 
 # Selecionar colunas específicas para descartar do dataframe
 e_commerce_pedidos <- e_commerce_pedidos %>%
@@ -55,8 +69,17 @@ write.csv(e_commerce_pedidos, "./_data/clean/e_commerce_pedidos.csv", row.names 
 # Carregar e processar dados de "e_commerce_clientes"
 e_commerce_clientes <- read_excel("./_data/raw/e_commerce_clientes.xlsx")
 
+# Anonimizar email e criar a coluna id_cliente
+e_commerce_clientes <- e_commerce_clientes %>%
+  mutate(id_cliente = anonymize_email(email))
+
 # Selecionar colunas específicas para descartar do dataframe
 e_commerce_clientes <- e_commerce_clientes %>%
+  mutate(non_na_count = rowSums(!is.na(e_commerce_clientes))) %>%
+  group_by(cpf) %>%
+  arrange(desc(non_na_count)) %>%
+  slice_head(n = 1) %>%
+  ungroup() %>%
   select(
     -id,
     -nome,
@@ -74,14 +97,10 @@ e_commerce_clientes <- e_commerce_clientes %>%
     -ip,
     -utm_source,
     -utm_campaign,
-    -rua
-  ) |>
-  mutate(non_na_count = rowSums(!is.na(e_commerce_clientes))) |>
-  group_by(cpf) |>
-  arrange(desc(non_na_count)) |>
-  slice_head(n = 1) |>
-  ungroup() |>
-  select(-cpf)
+    -rua,
+    -cpf,
+    -non_na_count
+  )
 
 # Imprimir os nomes das colunas restantes no dataframe
 print(colnames(e_commerce_clientes))
