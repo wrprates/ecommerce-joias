@@ -5,7 +5,7 @@ library(digest)
 
 # Função para anonimizar email e criar id_cliente
 anonymize_email <- function(email_column) {
-  sapply(email_column, function(x) digest(x, algo = "sha256"))
+  sapply(email_column, function(x) substr(digest(x, algo = "sha256"), 1, 10))
 }
 
 # Carregar e processar dados de "e_commerce_carrinhos"
@@ -57,7 +57,8 @@ e_commerce_pedidos <- e_commerce_pedidos %>%
     -ip,
     -id_transacao_gateway,
     -cod_barras_boleto,
-    -cupom
+    -cupom,
+    -cartao
   )
 
 # Imprimir os nomes das colunas restantes no dataframe
