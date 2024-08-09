@@ -36,6 +36,7 @@ e_commerce_pedidos <- e_commerce_pedidos %>%
     -entrega_destinatario,
     -entrega_endereco,
     -entrega_numero,
+    -entrega_rua,
     -entrega_complemento,
     -codigo_rastreamento,
     -url_rastreamento,
@@ -57,21 +58,30 @@ e_commerce_clientes <- read_excel("./_data/raw/e_commerce_clientes.xlsx")
 # Selecionar colunas específicas para descartar do dataframe
 e_commerce_clientes <- e_commerce_clientes %>%
   select(
+    -id,
     -nome,
     -razao_social,
     -primeiro_nome,
     -ultimo_nome,
     -email,
     -cnpj,
-    -cpf,
     -marcas_compradas,
     -telefone_ddd,
     -telefone_numero,
     -telefone_com_ddd,
     -numero,
     -complemento,
-    -ip
-  )
+    -ip,
+    -utm_source,
+    -utm_campaign,
+    -rua
+  ) |>
+  mutate(non_na_count = rowSums(!is.na(e_commerce_clientes))) |>
+  group_by(cpf) |>
+  arrange(desc(non_na_count)) |>
+  slice_head(n = 1) |>
+  ungroup() |>
+  select(-cpf)
 
 # Imprimir os nomes das colunas restantes no dataframe
 print(colnames(e_commerce_clientes))
