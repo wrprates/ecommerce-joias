@@ -358,7 +358,7 @@ if (mediana_fieis > mediana_nao_fieis) {
 cat(conclusao_mediana)
 ```
 
-# Conclusão com base no P- valor do teste de hipótese Mann-Whitney
+# Conclusão com base no P- valor do teste de hipótese Mann-Whitneyyyy
 
 ```{r}
 cat(conclusao)
