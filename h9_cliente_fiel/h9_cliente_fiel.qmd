@@ -1,8 +1,365 @@
 ---
-title: "H9 - O cliente fiel compra estatisticamente mais a mesma marca"
-output: 
-  html_document:
-    self_contained: true
+title: "H9 - Clientes fiéis compram estatisticamente mais do mesmo produto do que clientes não fiéis."
+author: "Vivian Vense Melotto"
+date: "2024-08-15"
+format: 
+  html:
+    embed-resources: true
+    fig_caption: true
 ---
 
-## Escreva o conteúdo aqui
+## Carregar Pacotes 
+
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+
+## Carregar os arquivos na pasta \_data/clean
+
+```{r}
+pedidos <- read.csv("../_data/clean/e_commerce_pedidos.csv")
+clientes <- read.csv("../_data/clean/e_commerce_clientes.csv")
+carrinho <- read.csv("../_data/clean/e_commerce_carrinhos.csv")
+
+```
+
+## Verificar as 10 primeiras linhas e a estrutura dos dataframes
+
+```{r}
+head(pedidos, 10)
+head(clientes, 10)
+head(carrinho, 10)
+str(pedidos)
+str(clientes)
+str(carrinho)
+```
+
+## Dimensões dos dataframes
+
+```{r}
+dim(pedidos)
+dim(clientes)
+dim(carrinho)
+```
+
+## Sumário estatístico dos dataframes
+
+```{r}
+summary(pedidos)
+summary(clientes)
+summary(carrinho)
+```
+
+## Limpeza de dados
+
+### Verificar valores NAs
+
+```{r}
+colSums(is.na(pedidos))
+colSums(is.na(clientes))
+colSums(is.na(carrinho))
+```
+
+### Converter colunas de data para o formato Date
+
+```{r}
+
+pedidos$data <- as.Date(pedidos$data, format = "%d/%m/%Y %H:%M:%S")
+clientes$data_nascimento <- as.Date(clientes$data_nascimento, format = "%d/%m/%Y")
+```
+
+### Verificar duplicatas
+
+```{r}
+sum(duplicated(pedidos))
+sum(duplicated(clientes))
+sum(duplicated(carrinho))
+```
+
+## Distribuição de status dos pedidos
+
+```{r}
+table(pedidos$status)
+```
+
+## Filtrar pedidos pagos e cancelados
+
+```{r}
+
+pedidos_pagos <- pedidos %>% filter(status == "Pago")
+pedidos_cancelados <- pedidos %>% filter(status == "Cancelado")
+```
+
+## Analisar quantidade de pedidos por cliente
+
+```{r}
+
+pedidos_por_cliente <- pedidos %>% 
+  group_by(id_cliente) %>% 
+  summarise(total_pedidos = n())
+summary(pedidos_por_cliente$total_pedidos)
+```
+
+## Carrinhos abandonados por etapa
+
+```{r}
+table(carrinho$momento_abandono)
+```
+
+## Análise de clientes fiéis (mais de 3 pedidos) e não fiéis (3 pedidos ou menos)
+
+```{r}
+clientes_fieis <- pedidos %>% 
+  filter(id_cliente %in% (pedidos_por_cliente %>% 
+                            filter(total_pedidos > 3) %>% 
+                            pull(id_cliente)))
+
+clientes_nao_fieis <- pedidos %>% 
+  filter(id_cliente %in% (pedidos_por_cliente %>% 
+                            filter(total_pedidos <= 3) %>% 
+                            pull(id_cliente)))
+```
+
+## Impacto de descontos
+
+### Verificar e converter as colunas de desconto e total para numéricas
+
+```{r}
+pedidos$total <- as.numeric(gsub(",", ".", pedidos$total))
+cor(pedidos$total_desconto, pedidos$total)
+```
+
+## Visualização de dados
+
+### Gráfico de dispersão
+
+```{r}
+ggplot(pedidos, aes(x = total_desconto, y = total)) +
+  geom_point(color = "blue") +
+  labs(title = "Relação entre Desconto e Valor Total do Pedido",
+       x = "Total de Desconto",
+       y = "Valor Total do Pedido") +
+  theme_minimal()
+```
+
+### Histograma
+
+```{r}
+ggplot(pedidos, aes(x = total)) +
+  geom_histogram(binwidth = 50, fill = "green", color = "black") +
+  labs(title = "Distribuição dos Valores Totais dos Pedidos",
+       x = "Valor Total do Pedido",
+       y = "Frequência") +
+  theme_minimal()
+```
+
+### Boxplot
+
+```{r}
+ggplot(pedidos, aes(x = factor(total_desconto > 0), y = total, fill = factor(total_desconto > 0))) +
+  geom_boxplot() +
+  labs(title = "Distribuição do Valor Total dos Pedidos com e sem Desconto",
+       x = "Desconto Aplicado",
+       y = "Valor Total do Pedido") +
+  scale_x_discrete(labels = c("Sem Desconto", "Com Desconto")) +
+  scale_fill_manual(values = c("red", "green")) + # Defina as cores desejadas aqui
+  theme_minimal()
+
+```
+
+### Gráfico de barras para clientes fiéis
+
+```{r}
+ggplot(clientes_fieis, aes(x = produto)) +
+  geom_bar(fill = "purple") +
+  labs(title = "Frequência de Produtos entre Clientes Fiéis",
+       x = "Produto",
+       y = "Frequência") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Análise dos três produtos mais comprados entre clientes fiéis
+
+```{r}
+frequencia_produtos_fieis <- clientes_fieis %>%
+  count(produto) %>%
+  arrange(desc(n))
+
+top_3_produtos_fieis <- frequencia_produtos_fieis %>%
+  top_n(3, n)
+
+print(top_3_produtos_fieis)
+```
+
+### Gráfico de barras para os três produtos mais comprados entre clientes fiéis
+
+```{r}
+ggplot(top_3_produtos_fieis, aes(x = reorder(produto, n), y = n)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  labs(title = "Três Produtos Mais Vendidos entre Clientes Fiéis",
+       x = "Produto",
+       y = "Frequência") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+## Análise dos produtos mais vendidos entre clientes não fiéis
+
+```{r}
+frequencia_produtos_nao_fieis <- clientes_nao_fieis %>%
+  count(produto) %>%
+  arrange(desc(n))
+
+top_3_produtos_nao_fieis <- frequencia_produtos_nao_fieis %>%
+  top_n(3, n)
+
+print(top_3_produtos_nao_fieis)
+```
+
+### Gráfico de barras para os três produtos mais vendidos entre clientes não fiéis
+
+```{r}
+
+ggplot(top_3_produtos_nao_fieis, aes(x = reorder(produto, n), y = n)) +
+  geom_bar(stat = "identity", fill = "purple") +
+  labs(title = "Três Produtos Mais Vendidos entre Clientes Não Fiéis",
+       x = "Produto",
+       y = "Frequência") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+frequencia_produtos_nao_fieis \<- data.frame( produto = c("Produto A", "Produto B", "Produto C"), n = c(3, 2, 1) )
+
+# Combinação de dados para análise comparativa entre clientes fiéis e não fiéis
+
+```{r}
+freq_produtos_combinados <- bind_rows(
+  frequencia_produtos_fieis %>% mutate(tipo_cliente = "Fiel"),
+  frequencia_produtos_nao_fieis %>% mutate(tipo_cliente = "Não Fiel")
+)
+```
+
+```{r}
+print(freq_produtos_combinados)
+```
+
+## TESTES FINAIS :Testes de normalidade e Mann-Whitney 
+
+
+```{r}
+shapiro_fieis <- shapiro.test(frequencia_produtos_fieis$n)
+shapiro_nao_fieis <- shapiro.test(frequencia_produtos_nao_fieis$n)
+
+print(shapiro_fieis)
+print(shapiro_nao_fieis)
+```
+
+```{r}
+
+teste_mann_whitney <- wilcox.test(frequencia_produtos_fieis$n, frequencia_produtos_nao_fieis$n, exact = FALSE)
+print(teste_mann_whitney)
+```
+## Análise baseada no p-valor do teste de hipótese
+
+```{r}
+if (teste_mann_whitney$p.value < 0.05) {
+  conclusao <- "Há evidências suficientes para rejeitar a hipótese nula.\nIsso indica que há uma diferença significativa na frequência de compras do mesmo produto \nentre clientes fiéis e não fiéis.\n"
+  
+  if (mean(frequencia_produtos_fieis$n) > mean(frequencia_produtos_nao_fieis$n)) {
+    conclusao <- paste(conclusao, "Clientes fiéis compram mais do mesmo produto em comparação com clientes não fiéis.\n")
+  } else {
+    conclusao <- paste(conclusao, "Clientes não fiéis compram mais do mesmo produto em comparação com clientes fiéis.\n")
+  }
+} else {
+  conclusao <- "Não há evidências suficientes para rejeitar a hipótese nula.\nIsso sugere que não há uma diferença significativa na frequência de compras do mesmo produto entre clientes fiéis e não fiéis.\n"
+}
+```
+
+
+
+######################### 
+# Sequência para medianas 
+
+```{r}
+# Contagem de frequência de compra do mesmo produto entre clientes fiéis
+
+frequencia_produtos_fieis <- clientes_fieis %>%
+  group_by(produto) %>%
+  summarise(frequencia = n())
+```
+
+## Converter a coluna 'frequencia' para numérico
+
+```{r}
+frequencia_produtos_fieis$frequencia <- as.numeric(frequencia_produtos_fieis$frequencia)
+```
+
+## Exibir o resultado da contagem para clientes fiéis
+
+```{r}
+print(frequencia_produtos_fieis)
+```
+
+## Contagem de frequência de compra do mesmo produto entre clientes não fiéis
+
+```{r}
+frequencia_produtos_nao_fieis <- clientes_nao_fieis %>%
+  group_by(produto) %>%
+  summarise(frequencia = n())
+```
+
+```{r}
+frequencia_produtos_nao_fieis$frequencia <- as.numeric(frequencia_produtos_nao_fieis$frequencia)
+```
+
+## Exibir o resultado da contagem para clientes não fiéis
+
+```{r}
+print(frequencia_produtos_nao_fieis)
+```
+
+## Cálculo das medianas
+```{r}
+mediana_fieis <- median(frequencia_produtos_fieis$frequencia)
+mediana_nao_fieis <- median(frequencia_produtos_nao_fieis$frequencia)
+
+```
+
+## Exibição das medianas
+
+```{r}
+print(paste("Mediana da frequência de compra do mesmo produto por clientes fiéis:", mediana_fieis))
+print(paste("Mediana da frequência de compra do mesmo produto por clientes não fiéis:", mediana_nao_fieis))
+```
+
+## Conclusão baseada na comparação das medianas
+
+```{r}
+
+if (mediana_fieis > mediana_nao_fieis) {
+  conclusao_mediana <- "Clientes fiéis compram mais do mesmo produto em comparação com clientes não fiéis, \ncom base na mediana das frequências de compra."
+} else if (mediana_fieis < mediana_nao_fieis) {
+  conclusao_mediana <- "Clientes não fiéis compram mais do mesmo produto em comparação com clientes fiéis, com base na mediana das frequências de compra."
+} else {
+  conclusao_mediana <- "A mediana das frequências de compra é igual para clientes fiéis e não fiéis."
+}
+
+```
+
+# Conclusões finais:
+
+# Conclusão resultado através da mediana
+
+```{r}
+
+cat(conclusao_mediana)
+```
+
+# Conclusão com base no P- valor do teste de hipótese Mann-Whitney
+
+```{r}
+cat(conclusao)
+```
