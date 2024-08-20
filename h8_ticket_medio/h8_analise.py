@@ -25,7 +25,6 @@ df_pedidos['data'] = df_pedidos['data'].apply(lambda x: x.strftime('%Y/%m/%d'))
 df_pedidos = df_pedidos.filter(['id_cliente', 'total_pago', 'data'])
 
 #%% Criando df_pedidos com datas especiais e não especiais
-
 # Vamos criar a lista com as datas especiais
 datas_especiais = ([
     '2024/01/01', '2024/01/06', '2024/01/25', '2024/02/10', '2024/02/11', 
@@ -38,9 +37,17 @@ datas_especiais = ([
     '2024/11/02', '2024/11/15', '2024/11/20', '2024/12/24', '2024/12/25', '2024/12/31'])
 
 # Agora criaremos outro dataframe apenas com as datas_especiais e um com datas normais
-## Aqui temos uma amostra relativamente pequena, pois contém apenas 14 linhas das 145
 df_pedidos_datas_especiais = df_pedidos[df_pedidos['data'].isin(datas_especiais)].reset_index(drop=True)
-
 df_pedidos_datas_normais = df_pedidos[df_pedidos['data'].isin(datas_especiais) == False].reset_index(drop=True)
 
-# %%
+#%%
+# Vamos criar os dois grupos com o ticket médio de cada cliente
+df_pedidos_datas_especiais.groupby('id_cliente')['total_pago'].mean() # Apenas 5 clientes
+df_pedidos_datas_normais.groupby('id_cliente')['total_pago'].mean()
+
+## No df_pedidos_datas_especiais temos uma limitação, pois temos uma amostra relativamente pequena, contendo apenas 5 clientes de 43
+
+#%%
+# Agora, como queremos comparar a variável 'ticket médio' entre dois grupos, e ela é contínua.
+# Com isso, iremos usar o teste t two sample se for normalmente distribuida (paramétrico), ou o teste de mann whitney u se não for paramétrico
+# Primeiramente vamos testar a normalidade usando o teste de shapiro.
