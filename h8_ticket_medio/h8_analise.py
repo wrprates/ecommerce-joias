@@ -42,8 +42,9 @@ df_pedidos_datas_normais = df_pedidos[df_pedidos['data'].isin(datas_especiais) =
 
 #%%
 # Vamos criar os dois grupos com o ticket médio de cada cliente
-df_pedidos_datas_especiais.groupby('id_cliente')['total_pago'].mean() # Apenas 5 clientes
-df_pedidos_datas_normais.groupby('id_cliente')['total_pago'].mean()
+ticket_medio_especiais = df_pedidos_datas_especiais.groupby('id_cliente')['total_pago'].mean() # Apenas 5 clientes
+ticket_medio_normais = df_pedidos_datas_normais.groupby('id_cliente')['total_pago'].mean()
+ticket_medio_total = df_pedidos.groupby('id_cliente')['total_pago'].mean()
 
 ## No df_pedidos_datas_especiais temos uma limitação, pois temos uma amostra relativamente pequena, contendo apenas 5 clientes de 43
 
@@ -51,3 +52,16 @@ df_pedidos_datas_normais.groupby('id_cliente')['total_pago'].mean()
 # Agora, como queremos comparar a variável 'ticket médio' entre dois grupos, e ela é contínua.
 # Com isso, iremos usar o teste t two sample se for normalmente distribuida (paramétrico), ou o teste de mann whitney u se não for paramétrico
 # Primeiramente vamos testar a normalidade usando o teste de shapiro.
+from scipy.stats import shapiro, mannwhitneyu
+
+res_especiais = shapiro(ticket_medio_especiais)
+res_normais = shapiro(ticket_medio_normais)
+res_totais = shapiro(ticket_medio_total)
+
+
+
+# --- OBS: ao verificarmos quantos clientes ativos temos através da colunas ativos usando df_clientes.query("ativo == 'sim'"),
+# temos uma quantidade incorreta de clientes ativos, mostrando 83 de 84,
+# sendo que, ao verificarmos a quantidade de clientes únicos através do dataset de pedidos
+# temos 43 clientes que fizeram pedidos.
+#%%
