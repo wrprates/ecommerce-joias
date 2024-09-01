@@ -8,14 +8,14 @@ format:
     fig_caption: true
 ---
 
-## Carregar Pacotes 
+## Carregar Pacotes
 
 ```{r}
 library(dplyr)
 library(ggplot2)
 ```
 
-## Carregar os arquivos na pasta \_data/clean
+## Carregar os arquivos da pasta \_data/clean
 
 ```{r}
 pedidos <- read.csv("../_data/clean/e_commerce_pedidos.csv")
@@ -231,8 +231,6 @@ ggplot(top_3_produtos_nao_fieis, aes(x = reorder(produto, n), y = n)) +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
-frequencia_produtos_nao_fieis \<- data.frame( produto = c("Produto A", "Produto B", "Produto C"), n = c(3, 2, 1) )
-
 # Combinação de dados para análise comparativa entre clientes fiéis e não fiéis
 
 ```{r}
@@ -246,8 +244,7 @@ freq_produtos_combinados <- bind_rows(
 print(freq_produtos_combinados)
 ```
 
-## TESTES FINAIS :Testes de normalidade e Mann-Whitney 
-
+## TESTES FINAIS :Testes de normalidade e Mann-Whitney
 
 ```{r}
 shapiro_fieis <- shapiro.test(frequencia_produtos_fieis$n)
@@ -262,6 +259,7 @@ print(shapiro_nao_fieis)
 teste_mann_whitney <- wilcox.test(frequencia_produtos_fieis$n, frequencia_produtos_nao_fieis$n, exact = FALSE)
 print(teste_mann_whitney)
 ```
+
 ## Análise baseada no p-valor do teste de hipótese
 
 ```{r}
@@ -278,10 +276,9 @@ if (teste_mann_whitney$p.value < 0.05) {
 }
 ```
 
-
-
 ######################### 
-# Sequência para medianas 
+
+# Sequência para medianas
 
 ```{r}
 # Contagem de frequência de compra do mesmo produto entre clientes fiéis
@@ -322,6 +319,7 @@ print(frequencia_produtos_nao_fieis)
 ```
 
 ## Cálculo das medianas
+
 ```{r}
 mediana_fieis <- median(frequencia_produtos_fieis$frequencia)
 mediana_nao_fieis <- median(frequencia_produtos_nao_fieis$frequencia)
@@ -358,7 +356,7 @@ if (mediana_fieis > mediana_nao_fieis) {
 cat(conclusao_mediana)
 ```
 
-# Conclusão com base no P- valor do teste de hipótese Mann-Whitneyyyy
+# Conclusão com base no P- valor do teste de hipótese Mann-Whitney
 
 ```{r}
 cat(conclusao)

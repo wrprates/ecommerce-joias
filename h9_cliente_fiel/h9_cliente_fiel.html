@@ -3127,8 +3127,8 @@ Anexando pacote: &#39;dplyr&#39;</code></pre>
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(ggplot2)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
 </section>
-<section id="carregar-os-arquivos-na-pasta-_dataclean" class="level2">
-<h2 class="anchored" data-anchor-id="carregar-os-arquivos-na-pasta-_dataclean">Carregar os arquivos na pasta _data/clean</h2>
+<section id="carregar-os-arquivos-da-pasta-_dataclean" class="level2">
+<h2 class="anchored" data-anchor-id="carregar-os-arquivos-da-pasta-_dataclean">Carregar os arquivos da pasta _data/clean</h2>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>pedidos <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;../_data/clean/e_commerce_pedidos.csv&quot;</span>)</span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>clientes <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;../_data/clean/e_commerce_clientes.csv&quot;</span>)</span>
@@ -3864,7 +3864,6 @@ Dados Pessoais        Entrega      Pagamento
 </div>
 </div>
 </div>
-<p>frequencia_produtos_nao_fieis &lt;- data.frame( produto = c(“Produto A”, “Produto B”, “Produto C”), n = c(3, 2, 1) )</p>
 </section>
 </section>
 <section id="combinação-de-dados-para-análise-comparativa-entre-clientes-fiéis-e-não-fiéis" class="level1">
@@ -4102,8 +4101,8 @@ com base na mediana das frequências de compra.</code></pre>
 </div>
 </div>
 </section>
-<section id="conclusão-com-base-no-p--valor-do-teste-de-hipótese-mann-whitneyyyy" class="level1">
-<h1>Conclusão com base no P- valor do teste de hipótese Mann-Whitneyyyy</h1>
+<section id="conclusão-com-base-no-p--valor-do-teste-de-hipótese-mann-whitney" class="level1">
+<h1>Conclusão com base no P- valor do teste de hipótese Mann-Whitney</h1>
 <div class="cell">
 <div class="sourceCode cell-code" id="cb90"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb90-1"><a href="#cb90-1" aria-hidden="true" tabindex="-1"></a><span class="fu">cat</span>(conclusao)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
