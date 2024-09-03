@@ -101,7 +101,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="carregando-os-dados-necessários" class="level2">
 <h2 class="anchored" data-anchor-id="carregando-os-dados-necessários">Carregando os dados necessários</h2>
-<div id="23aef625" class="cell" data-execution_count="1">
+<div id="5def2cb0" class="cell" data-execution_count="1">
 <div class="sourceCode cell-code" id="cb1"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> pandas <span class="im">import</span> DataFrame, read_csv, to_datetime, concat</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> os <span class="im">import</span> path</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
@@ -111,8 +111,8 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>df_carrinhos <span class="op">=</span> read_csv(path.join(datadir, <span class="st">'e_commerce_carrinhos.csv'</span>))</span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>df_pedidos <span class="op">=</span> read_csv(path.join(datadir, <span class="st">'e_commerce_pedidos.csv'</span>))</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>df_pedidos</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="12">
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>df_pedidos.drop(columns<span class="op">=</span>[<span class="st">'Unnamed: 0'</span>]).reset_index(drop<span class="op">=</span><span class="va">True</span>).head()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div class="cell-output cell-output-display" data-execution_count="62">
 <div>
 
 
@@ -120,7 +120,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <thead>
 <tr class="header">
 <th data-quarto-table-cell-role="th"></th>
-<th data-quarto-table-cell-role="th">Unnamed: 0</th>
 <th data-quarto-table-cell-role="th">id</th>
 <th data-quarto-table-cell-role="th">data</th>
 <th data-quarto-table-cell-role="th">data_pagamento</th>
@@ -130,6 +129,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <th data-quarto-table-cell-role="th">pagamento</th>
 <th data-quarto-table-cell-role="th">produto</th>
 <th data-quarto-table-cell-role="th">sku</th>
+<th data-quarto-table-cell-role="th">quantidade</th>
 <th data-quarto-table-cell-role="th">...</th>
 <th data-quarto-table-cell-role="th">entrega_cidade</th>
 <th data-quarto-table-cell-role="th">entrega_estado</th>
@@ -146,7 +146,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <tbody>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">0</td>
-<td>1</td>
 <td>117569438</td>
 <td>04/08/2024 18:26:40</td>
 <td>04/08/2024 18:27</td>
@@ -156,6 +155,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pix</td>
 <td>BRACELETE AJUSTÁVEL O COM COROA</td>
 <td>DFREFSP8P</td>
+<td>1</td>
 <td>...</td>
 <td>Brasilia</td>
 <td>Distrito Federal</td>
@@ -170,7 +170,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">1</td>
-<td>2</td>
 <td>117385907</td>
 <td>01/08/2024 19:08:02</td>
 <td>01/08/2024 19:11</td>
@@ -180,6 +179,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pix</td>
 <td>BRACELETE AJUSTÁVEL O COM COROA</td>
 <td>DFREFSP8P</td>
+<td>1</td>
 <td>...</td>
 <td>Varzea Nova(Santa Rita)</td>
 <td>Paraiba</td>
@@ -194,7 +194,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">2</td>
-<td>3</td>
 <td>117385794</td>
 <td>01/08/2024 19:05:53</td>
 <td>NaN</td>
@@ -204,6 +203,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pix</td>
 <td>BRACELETE AJUSTÁVEL O COM COROA</td>
 <td>DFREFSP8P</td>
+<td>1</td>
 <td>...</td>
 <td>Varzea Nova(Santa Rita)</td>
 <td>Paraiba</td>
@@ -218,7 +218,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="even">
 <td data-quarto-table-cell-role="th">3</td>
-<td>4</td>
 <td>117382873</td>
 <td>01/08/2024 18:12:14</td>
 <td>NaN</td>
@@ -228,6 +227,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pix</td>
 <td>BRACELETE AJUSTÁVEL O COM COROA</td>
 <td>DFREFSP8P</td>
+<td>1</td>
 <td>...</td>
 <td>Varzea Nova(Santa Rita)</td>
 <td>Paraiba</td>
@@ -242,7 +242,6 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 <tr class="odd">
 <td data-quarto-table-cell-role="th">4</td>
-<td>5</td>
 <td>117382771</td>
 <td>01/08/2024 18:09:41</td>
 <td>NaN</td>
@@ -252,6 +251,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>Pix</td>
 <td>BRACELETE AJUSTÁVEL O COM COROA</td>
 <td>DFREFSP8P</td>
+<td>1</td>
 <td>...</td>
 <td>Varzea Nova(Santa Rita)</td>
 <td>Paraiba</td>
@@ -264,154 +264,10 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>NaN</td>
 <td>3e109eedd5</td>
 </tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-<td>...</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">140</td>
-<td>141</td>
-<td>112676891</td>
-<td>22/05/2024 13:22:56</td>
-<td>22/05/2024 13:22</td>
-<td>22/05/2024 13:27</td>
-<td>1042552727006222</td>
-<td>Cancelado</td>
-<td>Cartão de crédito</td>
-<td>Teste</td>
-<td>4P8E3PJHB</td>
-<td>...</td>
-<td>Florianopolis</td>
-<td>Santa Catarina</td>
-<td>88058000</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>0db3cf4f27</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">141</td>
-<td>142</td>
-<td>112676767</td>
-<td>22/05/2024 13:21:14</td>
-<td>NaN</td>
-<td>22/05/2024 15:01</td>
-<td>1042552431219898</td>
-<td>Cancelado</td>
-<td>Pix</td>
-<td>Teste</td>
-<td>4P8E3PJHB</td>
-<td>...</td>
-<td>Florianopolis</td>
-<td>Santa Catarina</td>
-<td>88058000</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>0db3cf4f27</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">142</td>
-<td>143</td>
-<td>112675088</td>
-<td>22/05/2024 12:54:55</td>
-<td>NaN</td>
-<td>22/05/2024 14:45</td>
-<td>1042552609058447</td>
-<td>Cancelado</td>
-<td>Pix</td>
-<td>BRINCO ARGOLA SOL E LUA</td>
-<td>JRM3YWN95</td>
-<td>...</td>
-<td>Florianopolis</td>
-<td>Santa Catarina</td>
-<td>88058000</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>0db3cf4f27</td>
-</tr>
-<tr class="even">
-<td data-quarto-table-cell-role="th">143</td>
-<td>144</td>
-<td>112670127</td>
-<td>22/05/2024 11:37:57</td>
-<td>22/05/2024 11:37</td>
-<td>22/05/2024 11:47</td>
-<td>1042552577521467</td>
-<td>Cancelado</td>
-<td>Cartão de crédito</td>
-<td>Teste</td>
-<td>JMPBRU537</td>
-<td>...</td>
-<td>Florianopolis</td>
-<td>Santa Catarina</td>
-<td>88058000</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>0db3cf4f27</td>
-</tr>
-<tr class="odd">
-<td data-quarto-table-cell-role="th">144</td>
-<td>145</td>
-<td>112669238</td>
-<td>22/05/2024 11:23:14</td>
-<td>NaN</td>
-<td>28/05/2024 17:09</td>
-<td>1042552155461445</td>
-<td>Cancelado</td>
-<td>Pix</td>
-<td>BRINCO ARGOLA SOL E LUA</td>
-<td>JRM3YWN95</td>
-<td>...</td>
-<td>Florianopolis</td>
-<td>Santa Catarina</td>
-<td>88058000</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>NaN</td>
-<td>0db3cf4f27</td>
-</tr>
 </tbody>
 </table>
 
-<p>145 rows × 35 columns</p>
+<p>5 rows × 34 columns</p>
 </div>
 </div>
 </div>
@@ -420,7 +276,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <section id="realizando-os-tratamentos-dos-dados-necessários-em-df_pedidos" class="level2">
 <h2 class="anchored" data-anchor-id="realizando-os-tratamentos-dos-dados-necessários-em-df_pedidos">Realizando os tratamentos dos dados necessários em df_pedidos:</h2>
 <p>Do dataframe ‘df_pedidos’ Iremos pegar a coluna ‘total_pago’ e a coluna ‘id_cliente’, assim teremos o valor total pago por cliente, além da data. A ideia é dividir em dois grupos, o ticket médio dos clientes em datas normais, e em datas especiais.</p>
-<div id="ed670f81" class="cell" data-execution_count="2">
+<div id="d4624442" class="cell" data-execution_count="2">
 <div class="sourceCode cell-code" id="cb2"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Trocando as ',' por '.' para converter para float na coluna 'total_pago'</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>df_pedidos[<span class="st">'total_pago'</span>] <span class="op">=</span> (df_pedidos[<span class="st">'total_pago'</span>]</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a> .replace(<span class="st">','</span>, <span class="st">'.'</span>, regex<span class="op">=</span><span class="va">True</span>)</span>
@@ -434,7 +290,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>df_pedidos <span class="op">=</span> df_pedidos.<span class="bu">filter</span>([<span class="st">'id_cliente'</span>, <span class="st">'total_pago'</span>, <span class="st">'data'</span>])</span>
 <span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>df_pedidos</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="13">
+<div class="cell-output cell-output-display" data-execution_count="63">
 <div>
 
 
@@ -524,7 +380,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="criando-df_pedidos-com-datas-especiais-e-não-especiais" class="level2">
 <h2 class="anchored" data-anchor-id="criando-df_pedidos-com-datas-especiais-e-não-especiais">Criando df_pedidos com datas especiais e não especiais</h2>
-<div id="5ba82c35" class="cell" data-execution_count="3">
+<div id="0415eebd" class="cell" data-execution_count="3">
 <div class="sourceCode cell-code" id="cb3"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vamos criar a lista com as datas especiais</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>datas_especiais <span class="op">=</span> ([</span>
 <span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="st">'2024/01/01'</span>, <span class="st">'2024/01/06'</span>, <span class="st">'2024/01/25'</span>, <span class="st">'2024/02/10'</span>, <span class="st">'2024/02/11'</span>, </span>
@@ -543,9 +399,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </section>
 <section id="analisando-grupos" class="level2">
 <h2 class="anchored" data-anchor-id="analisando-grupos">Analisando grupos</h2>
-<div id="d9bd958a" class="cell" data-execution_count="4">
+<div id="96dc09f5" class="cell" data-execution_count="4">
 <div class="sourceCode cell-code" id="cb4"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>df_pedidos_datas_especiais</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="15">
+<div class="cell-output cell-output-display" data-execution_count="65">
 <div>
 
 
@@ -661,9 +517,9 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="0f6fb45e" class="cell" data-execution_count="5">
+<div id="593ab985" class="cell" data-execution_count="5">
 <div class="sourceCode cell-code" id="cb5"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>df_pedidos_datas_normais</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="16">
+<div class="cell-output cell-output-display" data-execution_count="66">
 <div>
 
 
@@ -750,14 +606,14 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </div>
 </div>
 </div>
-<div id="8a0b7885" class="cell" data-execution_count="6">
+<div id="8d785680" class="cell" data-execution_count="6">
 <div class="sourceCode cell-code" id="cb6"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Vamos criar os grupos com o ticket médio de cada cliente</span></span>
 <span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ticket_medio_especiais <span class="op">=</span> df_pedidos_datas_especiais.groupby(<span class="st">'id_cliente'</span>)[<span class="st">'total_pago'</span>].mean()</span>
 <span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ticket_medio_normais <span class="op">=</span> df_pedidos_datas_normais.groupby(<span class="st">'id_cliente'</span>)[<span class="st">'total_pago'</span>].mean()</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 </div>
-<div id="d8772831" class="cell" data-execution_count="7">
+<div id="e86b83c1" class="cell" data-execution_count="7">
 <div class="sourceCode cell-code" id="cb7"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>ticket_medio_especiais <span class="co"># Limitação com apenas 5 linhas</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="18">
+<div class="cell-output cell-output-display" data-execution_count="68">
 <pre><code>id_cliente
 69ae2c2675    400.50
 6d89f121b2    607.00
@@ -767,9 +623,9 @@ f3d6007fb0    464.90
 Name: total_pago, dtype: float64</code></pre>
 </div>
 </div>
-<div id="04f8e026" class="cell" data-execution_count="8">
+<div id="35d1d33e" class="cell" data-execution_count="8">
 <div class="sourceCode cell-code" id="cb9"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>ticket_medio_normais</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-display" data-execution_count="19">
+<div class="cell-output cell-output-display" data-execution_count="69">
 <pre><code>id_cliente
 0220acd6a2    166.900000
 0db3cf4f27     70.288000
@@ -819,49 +675,38 @@ Name: total_pago, dtype: float64</code></pre>
 <section id="realizando-teste-de-normalidade-e-teste-de-hipótese" class="level2">
 <h2 class="anchored" data-anchor-id="realizando-teste-de-normalidade-e-teste-de-hipótese">Realizando teste de normalidade e teste de hipótese</h2>
 <p>Agora, como queremos comparar a variável ‘ticket médio’ entre dois grupos, e ela é contínua. Com isso, iremos usar o teste t two sample se for normalmente distribuida (paramétrico), ou o teste de mann whitney u se não for paramétrico.</p>
-<div id="4ca0408c" class="cell" data-execution_count="9">
-<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Primeiramente vamos testar a normalidade usando o teste de shapiro.</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> shapiro</span>
-<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>res_especiais <span class="op">=</span> shapiro(ticket_medio_especiais)</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>res_normais <span class="op">=</span> shapiro(ticket_medio_normais)</span>
-<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res_especiais.pvalue)</span>
-<span id="cb11-8"><a href="#cb11-8" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(res_normais.pvalue)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<div id="9f5a1a05" class="cell" data-execution_count="9">
+<div class="sourceCode cell-code" id="cb11"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> shapiro</span>
+<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>res_especiais <span class="op">=</span> shapiro(ticket_medio_especiais)</span>
+<span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>res_normais <span class="op">=</span> shapiro(ticket_medio_normais)</span>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"O p-valor para datas especiais é </span><span class="sc">{</span>res_especiais<span class="sc">.</span>pvalue<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb11-7"><a href="#cb11-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"O p-valor para datas normais é </span><span class="sc">{</span>res_normais<span class="sc">.</span>pvalue<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.271522730038582
-0.006793495089499543</code></pre>
+<pre><code>O p-valor para datas especiais é 0.271522730038582
+O p-valor para datas normais é 0.006793495089499543</code></pre>
 </div>
 </div>
-<p>Nesse caso, como os p-valores estão dando resultados diferentes, sendo um para teste paramétrico e outro para não paramétrico, iremos considerar o que tem o maior tamanho amostral, ou seja, o p-valor de datas normais, que é 8x maior que o de datas especiais. Portanto, o p-valor é 0,6%, o que é menor que 5%, resultando em um teste não paramétrico. Vamos usar o Wilcoxon Rank Sum (ou Mann Whitney U).</p>
-<div id="51a5f1a0" class="cell" data-execution_count="10">
+<p>Nesse caso, como os p-valores estão dando resultados diferentes, sendo um para teste paramétrico e outro para não paramétrico, iremos considerar o que tem o maior tamanho amostral, ou seja, o p-valor de datas normais, que é 8x maior que o de datas especiais. Portanto, o p-valor é 0,6%, o que é menor que 5%, resultando em um teste não paramétrico. Vamos usar o Wilcoxon Rank Sum (ou Mann Whitney U) com a hipótese H1 alternativa de que o valor do ticket medio em datas especiais é maior.</p>
+<div id="ddc1b82a" class="cell" data-execution_count="10">
 <div class="sourceCode cell-code" id="cb13"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="im">from</span> scipy.stats <span class="im">import</span> mannwhitneyu</span>
 <span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>_, p_valor <span class="op">=</span> mannwhitneyu(ticket_medio_normais, ticket_medio_especiais)</span>
+<span id="cb13-3"><a href="#cb13-3" aria-hidden="true" tabindex="-1"></a>_, p_valor <span class="op">=</span> mannwhitneyu(ticket_medio_especiais, ticket_medio_normais, alternative<span class="op">=</span><span class="st">'greater'</span>)</span>
 <span id="cb13-4"><a href="#cb13-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(p_valor)</span>
-<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ticket_medio_normais.median())</span>
-<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(ticket_medio_especiais.median())</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+<span id="cb13-5"><a href="#cb13-5" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"O p-valor do teste de hipótese é: </span><span class="sc">{</span>p_valor<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-6"><a href="#cb13-6" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"A mediana do ticket médio em datas normais é </span><span class="sc">{</span>ticket_medio_normais<span class="sc">.</span>median()<span class="sc">}</span><span class="ss">"</span>)</span>
+<span id="cb13-7"><a href="#cb13-7" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(<span class="ss">f"A mediana do ticket médio em datas especiais é </span><span class="sc">{</span>ticket_medio_especiais<span class="sc">.</span>median()<span class="sc">}</span><span class="ss">"</span>)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
 <div class="cell-output cell-output-stdout">
-<pre><code>0.003643188194802698
-320.255
-577.0</code></pre>
+<pre><code>O p-valor do teste de hipótese é: 0.001821594097401349
+A mediana do ticket médio em datas normais é 320.255
+A mediana do ticket médio em datas especiais é 577.0</code></pre>
 </div>
 </div>
 </section>
 <section id="conclusão" class="level2">
 <h2 class="anchored" data-anchor-id="conclusão">Conclusão</h2>
-<p>A partir do resultado acima, o p-valor do teste de mannwhitneyu, que prova a hipótese de que as duas distribuições são iguais, ou seja, que não há uma diferença significativa entre os valores dos tickets médios, deu 0,36%, ou seja, teve sua hipótese rejeitada, mostrando que há uma diferença signnificativa entre os dois grupos, o de ticket médio em datas especiais e o de ticket médio em datas normais. Para isso, comparamos agora as medianas entre eles, e verificamos que a mediana do ticket médio em datas normais é menor. Com isso podemos concluir a partir desse teste que o ticket médio em datas especiais é maior.</p>
-<p>Para confirmar isso, vamos realizar o teste de Wilcoxon Rank Sum (Mann Whitney U) no método alternativo “less”, ou seja, que prova a hipótese de que o grupo 1 (ticket médio em datas normais) é menor que o grupo 2 (ticket médio em datas especiais):</p>
-<div id="0e998490" class="cell" data-execution_count="11">
-<div class="sourceCode cell-code" id="cb15"><pre class="sourceCode python code-with-copy"><code class="sourceCode python"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>_, p_valor_less <span class="op">=</span> mannwhitneyu(ticket_medio_normais, ticket_medio_especiais, alternative<span class="op">=</span><span class="st">"less"</span>)</span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a><span class="bu">print</span>(p_valor_less)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
-<div class="cell-output cell-output-stdout">
-<pre><code>0.001821594097401349</code></pre>
-</div>
-</div>
-<p>Nesse teste, como a hipótese teve um p-valor aproximado de 0,183%, assumindo um valor de corte de 5%, assumimos que a hipótese foi rejeitada, o que mostra que a distribuição do ticket médio em datas normais na verdade é maior do que o do ticket médio em datas especiais. Com isso, nosso segundo teste de Mann Whitney U foi contrastante com o primeiro, o que torna a hipótese inconclusiva. Isso provavelmente aconteceu devido ao tamanho da amostra, uma limitação proveniente dos dados fornecidos.</p>
+<p>Como a hipótese H0 nula foi rejeitada devido ao p-valor menor que 5%, temos que a hipótese alternativa de que o ticket médio em datas especiais é maior do que o ticket médio em datas normais é o resultado do teste de Mann Whitney U. Além disso, podemos verificar pela diferença das medianas também, onde a mediana em datas normais (320,26) é menor do que a de datas especiais (577), o que mostra que o ticket médio é maior em datas especiais.</p>
 </section>
 
 </main>

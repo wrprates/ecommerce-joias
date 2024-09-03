@@ -18,7 +18,7 @@ df_clientes = read_csv(path.join(datadir, 'e_commerce_clientes.csv'))
 df_carrinhos = read_csv(path.join(datadir, 'e_commerce_carrinhos.csv'))
 df_pedidos = read_csv(path.join(datadir, 'e_commerce_pedidos.csv'))
 
-df_pedidos
+df_pedidos.drop(columns=['Unnamed: 0']).reset_index(drop=True).head()
 ```
 
 OBS: ao verificarmos quantos clientes ativos temos através da colunas ativos usando df_clientes.query("ativo == 'sim'"), temos uma quantidade incorreta de clientes ativos, mostrando 83 de 84, sendo que, ao verificarmos a quantidade de clientes únicos através do dataset de pedidos temos 43 clientes que fizeram pedidos.
@@ -93,38 +93,27 @@ No código acima, percebemos que df_pedidos_datas_especiais temos uma limitaçã
 Agora, como queremos comparar a variável 'ticket médio' entre dois grupos, e ela é contínua. Com isso, iremos usar o teste t two sample se for normalmente distribuida (paramétrico), ou o teste de mann whitney u se não for paramétrico.
 
 ```{python}
-# Primeiramente vamos testar a normalidade usando o teste de shapiro.
 from scipy.stats import shapiro
 
 res_especiais = shapiro(ticket_medio_especiais)
 res_normais = shapiro(ticket_medio_normais)
 
-print(res_especiais.pvalue)
-print(res_normais.pvalue)
+print(f"O p-valor para datas especiais é {res_especiais.pvalue}")
+print(f"O p-valor para datas normais é {res_normais.pvalue}")
 ```
 
-Nesse caso, como os p-valores estão dando resultados diferentes, sendo um para teste paramétrico e outro para não paramétrico, iremos considerar o que tem o maior tamanho amostral, ou seja, o p-valor de datas normais, que é 8x maior que o de datas especiais. Portanto, o p-valor é 0,6%, o que é menor que 5%, resultando em um teste não paramétrico. Vamos usar o Wilcoxon Rank Sum (ou Mann Whitney U).
+Nesse caso, como os p-valores estão dando resultados diferentes, sendo um para teste paramétrico e outro para não paramétrico, iremos considerar o que tem o maior tamanho amostral, ou seja, o p-valor de datas normais, que é 8x maior que o de datas especiais. Portanto, o p-valor é 0,6%, o que é menor que 5%, resultando em um teste não paramétrico. Vamos usar o Wilcoxon Rank Sum (ou Mann Whitney U) com a hipótese H1 alternativa de que o valor do ticket medio em datas especiais é maior.
 
 ```{python}
 from scipy.stats import mannwhitneyu
 
-_, p_valor = mannwhitneyu(ticket_medio_normais, ticket_medio_especiais)
+_, p_valor = mannwhitneyu(ticket_medio_especiais, ticket_medio_normais, alternative='greater')
 
-print(p_valor)
-print(ticket_medio_normais.median())
-print(ticket_medio_especiais.median())
+print(f"O p-valor do teste de hipótese é: {p_valor}")
+print(f"A mediana do ticket médio em datas normais é {ticket_medio_normais.median()}")
+print(f"A mediana do ticket médio em datas especiais é {ticket_medio_especiais.median()}")
 ```
 
 ## Conclusão
 
-A partir do resultado acima, o p-valor do teste de mannwhitneyu, que prova a hipótese de que as duas distribuições são iguais, ou seja, que não há uma diferença significativa entre os valores dos tickets médios, deu 0,36%, ou seja, teve sua hipótese rejeitada, mostrando que há uma diferença signnificativa entre os dois grupos, o de ticket médio em datas especiais e o de ticket médio em datas normais. Para isso, comparamos agora as medianas entre eles, e verificamos que a mediana do ticket médio em datas normais é menor. Com isso podemos concluir a partir desse teste que o ticket médio em datas especiais é maior.
-
-Para confirmar isso, vamos realizar o teste de Wilcoxon Rank Sum (Mann Whitney U) no método alternativo "less", ou seja, que prova a hipótese de que o grupo 1 (ticket médio em datas normais) é menor que o grupo 2 (ticket médio em datas especiais):
-
-```{python}
-_, p_valor_less = mannwhitneyu(ticket_medio_normais, ticket_medio_especiais, alternative="less")
-
-print(p_valor_less)
-```
-
-Nesse teste, como a hipótese teve um p-valor aproximado de 0,183%, assumindo um valor de corte de 5%, assumimos que a hipótese foi rejeitada, o que mostra que a distribuição do ticket médio em datas normais na verdade é maior do que o do ticket médio em datas especiais. Com isso, nosso segundo teste de Mann Whitney U foi contrastante com o primeiro, o que torna a hipótese inconclusiva. Isso provavelmente aconteceu devido ao tamanho da amostra, uma limitação proveniente dos dados fornecidos.
+Como a hipótese H0 nula foi rejeitada devido ao p-valor menor que 5%, temos que a hipótese alternativa de que o ticket médio em datas especiais é maior do que o ticket médio em datas normais é o resultado do teste de Mann Whitney U. Além disso, podemos verificar pela diferença das medianas também, onde a mediana em datas normais (320,26) é menor do que a de datas especiais (577), o que mostra que o ticket médio é maior em datas especiais.
