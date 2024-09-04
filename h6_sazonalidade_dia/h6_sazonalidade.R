@@ -1,54 +1,82 @@
-library("dplyr")
+# Carregar pacotes necessários
+library(dplyr)
+library(readr)
+library(lubridate)
+library(stats)
 
-data_carrinhos <- read.csv("Projetos/Projeto Ecommerce/ecommerce-joias/_data/clean/e_commerce_carrinhos.csv")
-data_clientes <- read.csv("Projetos/Projeto Ecommerce/ecommerce-joias/_data/clean/e_commerce_clientes.csv")
-data_pedidos <- read.csv("Projetos/Projeto Ecommerce/ecommerce-joias/_data/clean/e_commerce_pedidos.csv")
+# Carregar os dados
+df_carrinhos <- read_csv("_data/clean/e_commerce_carrinhos.csv")
+df_clientes <- read_csv("_data/clean/e_commerce_clientes.csv")
+df_pedidos <- read_csv("_data/clean/e_commerce_pedidos.csv")
 
-#analise de tipos das colunas
-glimpse(data_pedidos)
+# Análise de tipos
+str(df_pedidos)
 
+# Ver colunas
+names(df_pedidos)
 
-summary(data_pedidos)
+head(df_pedidos)
 
-#convertendo data char em datetime
-df_pedidos <- data_pedidos %>% 
-  mutate(data = as.POSIXct(data, format = "%d/%m/%Y %H:%M"))
+# Convertendo data - string para datetime
+df_pedidos$data <- dmy_hms(df_pedidos$data)
 
-#dia da semana
-df_pedidos <- df_pedidos %>%
-  mutate(dia_semana = weekdays(data))
+# Obter apenas a data, sem o horário
+df_pedidos$data_aux <- as.Date(df_pedidos$data)
 
-glimpse(df)
+# Agrupar por ID do pedido e obter a primeira ocorrência de cada data para cada pedido
+df_pedidos_unicos <- df_pedidos %>% 
+  group_by(id) %>% 
+  slice(1) %>%
+  ungroup()
 
-# Contagem de registros por dia da semana
-contagem_dia_semana <- df_pedidos %>%
-  group_by(dia_semana) %>%
-  summarise(quantidade = n()) %>%
-  arrange(match(dia_semana, c("domingo", "segunda-feira", "terça-feira", 
-                              "quarta-feira", "quinta-feira", 
-                              "sexta-feira", "sábado")))
+# Contar pedidos por data
+contagem_por_data <- df_pedidos_unicos %>% 
+  group_by(data_aux) %>% 
+  summarise(contagem = n()) %>% 
+  arrange(desc(contagem))
 
-# Visualizando o resultado
-print(contagem_dia_semana)
+print(contagem_por_data)
 
+# Criando nova coluna - dia da semana
+df_pedidos$dia_semana <- weekdays(df_pedidos$data)
 
-contagem_dia_semana <- contagem_dia_semana %>% 
-  arrange((desc(quantidade)))
+head(df_pedidos)
 
-#ordenando por desc.
-contagem_dia_semana
+# Agrupar por ID do pedido e obter a primeira ocorrência de cada data para cada pedido
+df_pedidos_unicos <- df_pedidos %>% 
+  group_by(id) %>% 
+  slice(1) %>%
+  ungroup()
 
-#frequencia esperada se a distribuição fosse uniforme
-freq_esp = nrow(df_pedidos)/7
-print(freq_esp)
+# Agrupar por 'dia_semana' e contar o número de pedidos únicos
+contagem_por_dia <- df_pedidos_unicos %>% 
+  group_by(dia_semana) %>% 
+  summarise(contagem = n()) %>% 
+  arrange(desc(contagem))
+
+print(contagem_por_dia)
+
+# Frequência esperada se os pedidos fossem uniformemente distribuídos
+frequencia_esperada <- nrow(df_pedidos_unicos) / 7
+print(frequencia_esperada)
+
+# Extrair a lista de contagens observadas e a lista de dias da semana
+contagens_observadas <- contagem_por_dia$contagem
+dias_da_semana <- contagem_por_dia$dia_semana
+
+# Calcular a frequência esperada (assumindo uma distribuição uniforme)
+frequencia_esperada <- sum(contagens_observadas) / length(dias_da_semana)
+frequencias_esperadas <- rep(frequencia_esperada, length(dias_da_semana))
 
 # Realizar o teste qui-quadrado
-resultado <- chisq.test(contagem_dia_semana$quantidade, p = rep(freq_esp, 7) / sum(contagem_dia_semana$quantidade))
+chi2_test <- chisq.test(contagens_observadas, p = frequencias_esperadas / sum(frequencias_esperadas))
 
-resultado
+# Exibir os resultados
+print(paste("Estatística qui-quadrado:", chi2_test$statistic))
+print(paste("Valor-p:", chi2_test$p.value))
 
-if (resultado$p.value < 0.05) {
-  cat("Rejeitamos a hipótese nula: há evidência de sazonalidade nos dias da semana.\n")
+if (chi2_test$p.value < 0.05) {
+  print("Rejeitamos a hipótese nula: há evidência de sazonalidade nos dias da semana.")
 } else {
-  cat("Não rejeitamos a hipótese nula: não há evidência de sazonalidade nos dias da semana.\n")
+  print("Não rejeitamos a hipótese nula: não há evidência de sazonalidade nos dias da semana.")
 }
