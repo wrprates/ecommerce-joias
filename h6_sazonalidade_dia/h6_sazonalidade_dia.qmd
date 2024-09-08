@@ -5,5 +5,66 @@ output:
     self_contained: true
 ---
 
-## Escreva o conteúdo aqui
+# Teste de hipóteses
+<p>H0: Não há evidência de sazonalidade nos dias da semana.<br>H1: Há evidência de sazonalidade nos dias da semana.</p>
 
+## Carregando dados
+
+```{python}
+import os
+os.chdir(r"C:\Users\mf_gu\OneDrive\Documentos\Projetos\Projeto Ecommerce\ecommerce-joias")
+```
+
+Importando as bibliotecas necessárias para manipulação de dados e para realizar o teste estatístico, bem como carregando o CSV:
+```{python}
+import pandas as pd
+import scipy.stats as stats
+
+df_pedidos = pd.read_csv("_data/clean/e_commerce_pedidos.csv")
+```
+
+
+```{python}
+# convertendo o campo data de object para datetime
+df_pedidos['data'] = pd.to_datetime(df_pedidos['data'], format='%d/%m/%Y %H:%M:%S')
+
+# criando a coluna dia da semana
+df_pedidos['dia_semana'] = df_pedidos['data'].dt.day_name()
+```
+
+
+Garantindo que cada pedido seja contado apenas uma vez (mesmo que tenha múltiplos itens), agrupamos os dados por id e selecionamos o primeiro registro de cada grupo:
+
+```{python}
+df_pedidos_unicos = df_pedidos.groupby('id').first().reset_index()
+
+#contando pedidos por dia da semana
+contagem_por_dia = df_pedidos_unicos.groupby('dia_semana').size().reset_index(name='contagem')
+```
+
+Extraindo as contagens observadas e os dias da semana para preparar o teste.
+Calculando a frequência esperada para cada dia da semana assumindo uma distribuição uniforme dos pedidos (isso significa que, num cenário de uniformidade esperamos que a quantidade de pedidos seja aproximadamente a mesma em cada dia da semana).
+```{python}
+# Extrair a lista de contagens de pedidos e a lista de dias da semana
+contagens_observadas = contagem_por_dia['contagem']
+dias_da_semana = contagem_por_dia['dia_semana']
+
+# Calcular a frequência esperada (assumindo uma distribuição uniforme)
+frequencia_esperada = contagens_observadas.sum() / len(dias_da_semana)
+frequencias_esperadas = [frequencia_esperada] * len(dias_da_semana)
+```
+
+
+Realizando o teste qui-quadrado para comparar as contagens observadas com as frequências esperadas:
+```{python}
+# Realizar o teste qui-quadrado
+chi2, p_valor = stats.chisquare(contagens_observadas, f_exp=frequencias_esperadas)
+
+# Resultados
+print(f"Estatística qui-quadrado: {chi2}")
+print(f"p-valor: {p_valor}")
+```
+
+## Conclusão
+O p-valor obtido é 0.046, que é menor do que o nível de significância comum de 0.05. Portanto, rejeitamos a hipótese nula (H0), que afirma que não há evidência de sazonalidade nos dias da semana.
+Esse resultado sugere que a distribuição dos pedidos ao longo dos dias da semana não é uniforme e pode haver padrões sazonais. Alguns dias da semana apresentam um número significativamente maior ou menor de pedidos do que outros, o que pode ter implicações importantes para a estratégia de negócios e a alocação de recursos.
