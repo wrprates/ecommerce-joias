@@ -5,4 +5,163 @@ output:
     self_contained: true
 ---
 
-## Escreva o conteúdo aqui
+---
+title: "Análise de Hipóteses - E-commerce"
+author: "Ana Paula Gnoatto"
+date: "2024-09-08"
+format: html
+editor: visual
+---
+
+## Introdução
+
+Esta análise tem como objetivo testar se produtos com preço abaixo de R\$150 são vendidos em maior quantidade ou em combinações com outros produtos, utilizando a base de dados de um e-commerce.
+
+## Carregamento e Exploração dos Dados
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+
+library(dplyr) 
+library(readr)
+library(ggplot2)
+
+# Carregar os dados
+e_commerce_pedidos <- read_csv( file = "https://raw.githubusercontent.com/wrprates/ecommerce-joias/dev/_data/clean/e_commerce_pedidos.csv")
+
+# Exibir as primeiras linhas dos dados
+
+head(e_commerce_pedidos)
+```
+
+Em preparação para os testes, será necessário fazer um pré tratamento dos dados, ajustar formatos e filtrar apenas pelos pedidos que foram pagos(Aprovados e/ou Entregues). Como alguns pedidos contém mais de 1 quantidade do mesmo produto, foi criado uma nova coluna para calcular o custo de cada produto.
+
+```{r}
+# Filtrando por pedidos aprovados/entregues
+pedidos_pagos <- e_commerce_pedidos |>
+  filter(!status %in% c("Cancelado", "Aguardando pagamento"))
+
+# Convertendo a coluna 'total_item' para numérico
+pedidos_pagos$total_item <- gsub(",", ".", pedidos_pagos$total_item)
+pedidos_pagos$total_item <- as.double(pedidos_pagos$total_item)
+
+# Normalizando pedidos com quantidade maior que 1
+pedidos_pagos <- pedidos_pagos %>%
+  mutate(preco_unitario = total_item / quantidade)
+
+# Verificar a nova coluna 'preco_unitario'
+head(pedidos_pagos)
+```
+
+Para rodar os testes, os dados serao separados em 2 grupos, os pedidos com produtos acima de R\$150 e os pedidos com produtos abaixo de R\$150:
+
+```{r}
+# Agrupando os produtos por pedido, somando as quantidades e obtendo o valor mínimo do produto no pedido
+pedidos_agrupados <- pedidos_pagos %>%
+  group_by(id) %>%
+  summarise(
+    preco_minimo_pedido = min(preco_unitario, na.rm = TRUE),  
+    quantidade_total = sum(quantidade),
+    total_item = sum(total_item)
+  )
+
+# Filtrando pedidos com pelo menos um produto abaixo de R$150
+pedidos_abaixo_150 <- pedidos_agrupados %>%
+  filter(preco_minimo_pedido < 150)
+
+# Verificando se esses pedidos são combinações (mais de um produto)
+pedidos_combinados_abaixo_150 <- pedidos_abaixo_150 %>%
+  filter(quantidade_total > 1)
+
+# Exibir os resultados
+pedidos_combinados_abaixo_150
+```
+
+```{r}
+# Filtrando pedidos com pelo menos um produto abaixo de R$150
+pedidos_acima_150 <- pedidos_agrupados %>%
+  filter(preco_minimo_pedido >= 150)
+
+# Exibir os resultados
+pedidos_acima_150
+```
+
+```{r}
+# Contando a quantidade de pedidos após separação
+count_abaixo_150 <- nrow(pedidos_abaixo_150)
+count_combinados_abaixo_150 <- nrow(pedidos_combinados_abaixo_150)
+count_acima_150 <- nrow(pedidos_acima_150)
+
+paste(count_abaixo_150, "pedidos com produtos abaixo de 150,", 
+      count_combinados_abaixo_150, "pedidos com produtos abaixo de 150 e mais de 1 produto na compra, e", 
+      count_acima_150, "pedidos com produtos acima de 150.")
+```
+
+## Rodando os testes
+
+Os pedidos podem ser separados em 3 categorias:
+
+1.  pedidos com produtos abaixo de 150 (35 compras)
+
+2.  pedidos com produtos abaixo de 150 e mais de 1 produto na compra (25 compras)
+
+3.  pedidos com produtos acima de 150 (11 compras)
+
+A pergunta foca em saber se joias mais simples (≤ R\$150) são vendidas em conjunto. Portanto, o objetivo é comparar pedidos com mais de 1 produto versus aqueles com apenas 1 produto para produtos mais simples (≤ R\$150).
+
+Para o primeiro, foi selecionado o Wilcoxon Rank Sum, ou Teste U de Mann-Whitney, por se tratar de uma amostra pequena e dados não paramétrico.
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+teste_wilcox <- wilcox.test(pedidos_abaixo_150$quantidade_total, pedidos_combinados_abaixo_150$quantidade_total)
+```
+
+No teste de Wilcox o resultado foi de p-valor 0.05014.
+
+Como o valor-p é ligeiramente maior que 0.05, não podemos rejeitar a hipótese nula, o que significa que não há evidência estatística suficiente para afirmar que a quantidade de produtos vendidos em pedidos "abaixo de R\$150" seja significativamente diferente da quantidade de produtos vendidos em pedidos "abaixo de R\$150 e em conjunto".
+
+**Neste caso é recomendado aguardar ter mais dados e rodar o teste novamente no futuro.**
+
+E em quesito de ticket médio, há alguma diferença?
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# Calculando o ticket médio para pedidos_abaixo_150
+ticket_medio_abaixo_150 <- pedidos_combinados_abaixo_150 %>%
+  summarize(ticket_medio = mean(total_item, na.rm = TRUE))
+
+# Calculando o ticket médio para pedidos_abaixo_150
+ticket_medio_acima_150 <- pedidos_acima_150 %>%
+  summarize(ticket_medio = mean(total_item, na.rm = TRUE))
+
+```
+
+```{r}
+#| echo: false
+#| message: false
+#| warning: false
+# Criando um data frame com as tabelas de ticket medio e gráfico de barras 
+ticket_medio_df <- data.frame(
+  categoria = c("Abaixo de 150", "Acima de 150"),
+  ticket_medio = c(ticket_medio_abaixo_150$ticket_medio, ticket_medio_acima_150$ticket_medio)
+)
+ggplot(ticket_medio_df, aes(x = categoria, y = ticket_medio, fill = categoria)) +
+  geom_bar(stat = "identity", width = 0.5) +  # Gráfico de barra
+  geom_text(aes(label = round(ticket_medio, 2)),  # Adiciona os rótulos (com 2 casas decimais)
+            vjust = -0.5, size = 5) +  # Posição do rótulo acima da barra
+  labs(title = "Ticket Médio por Categoria de Pedido", 
+       x = "Categoria de Pedido", 
+       y = "Ticket Médio (R$)") +
+  theme_minimal() +  # Tema simples
+  scale_fill_manual(values = c("skyblue", "lightcoral")) +  # Definir cores das barras
+  ylim(0, max(ticket_medio_df$ticket_medio) * 1.1)  # Ajustar o limite do eixo y para caber os rótulos
+
+```
+
+Apesar de não ter uma signficancia estatistica para comprovar se as compras com produtos mais simples vendem mais, o ticket médio das compras com produtos abaixo de R\$150 e com mais de 1 produto é maior que as compras com produtos acima de R\$150.
