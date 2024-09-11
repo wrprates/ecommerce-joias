@@ -5,4 +5,161 @@ output:
     self_contained: true
 ---
 
-## Escreva o conteúdo aqui
+#### Importando Pacotes
+```{python}
+import pandas as pd
+from sklearn.metrics.pairwise import cosine_similarity
+```
+
+#### Lendo arquivos
+```{python}
+arquivo = "../_data/clean/e_commerce_pedidos.csv"
+pedidos_df = pd.read_csv(arquivo)
+
+#Filtrando compras concluídas
+pedidos_df = pedidos_df[pedidos_df['status'].isin(['Pagamento aprovado', 'Entregue'])]
+
+pedidos_df.head()
+```
+
+#### Selecionando colunas relevantes
+Esta tabela está a nível de sku. Assim temos para cada linha o sku que está incluso no pedido.
+```{python}
+pedidos = pedidos_df[['numero_pedido', 'sku']]
+pedidos.head()
+```
+
+### Analisando produtos comprados em conjunto
+#### Contabilizando produtos vendidos em conjunto
+```{python}
+# Realiza o auto join para encontrar os produtos vendidos juntos no mesmo pedido
+df_joined = pedidos.merge(pedidos, on="numero_pedido")
+
+# Filtra as linhas onde os produtos são diferentes
+df_joined = df_joined[df_joined['sku_x'] != df_joined['sku_y']]
+
+# Agrupa e conta as combinações de produtos
+#size conta linhas e inclui nulos, count conta valores e desconsidera nulos
+df_resultado = df_joined.groupby(['sku_x', 'sku_y'])\
+                        .agg(contagem=('numero_pedido', 'size'))\
+                        .reset_index()\
+                        .sort_values(by=['contagem'], ascending=False)
+
+# Renomeia as colunas
+df_resultado = df_resultado.rename(columns={'sku_x': 'sku', 'sku_y': 'sku_casado'})
+
+df_resultado.head()
+```
+
+### Similaridade de Produtos
+```{python}
+# Tabela Pedido, Produto e Quantidade
+similaridade_produtos = pedidos_df[['numero_pedido', 'sku', 'quantidade']]
+
+similaridade_produtos = similaridade_produtos.groupby(['numero_pedido', 'sku'])\
+                        .agg(quantidade=('quantidade', 'size'))\
+                        .reset_index()\
+                        .sort_values(by=['quantidade'], ascending=False)
+
+similaridade_produtos.head()                       
+```
+
+```{python}
+# Criando uma matriz de utilidade onde:
+# - Linhas representam produtos
+# - Colunas representam pedidos
+# - Valores representam a quantidade comprada
+matriz_utilidade = similaridade_produtos.pivot_table(index='sku',
+                                       values='quantidade',
+                                       columns='numero_pedido',
+                                       fill_value=0)
+                                      
+matriz_utilidade.head()
+```
+
+```{python}
+# Calculando a similaridade cosseno entre os produtos com base em seus padrões de compra.
+matriz_similaridade = cosine_similarity(matriz_utilidade)
+
+print(matriz_similaridade)
+```
+
+```{python}
+# Convertendo a matriz de similaridade em um DataFrame
+df_similaridade = pd.DataFrame(matriz_similaridade, index=matriz_utilidade.index, columns=matriz_utilidade.index)
+
+df_similaridade.head()
+```
+
+```{python}
+# Adicionando uma coluna 'sku' ao DataFrame de similaridade para fácil referência.
+df_similaridade['sku'] = df_similaridade.index
+
+# Reordenando as colunas para que a coluna 'sku' seja a primeira.
+cols = ['sku'] + [col for col in df_similaridade if col != 'sku']
+df_similaridade = df_similaridade[cols]
+
+df_similaridade.head()
+```
+
+```{python}
+# Despivotando a tabela
+df_unpivot = df_similaridade.melt(id_vars=['sku'], var_name='sku_casado', value_name='similaridade')\
+                             .sort_values(by=['similaridade'], ascending=False)
+
+#Filtrando produtos diferentes
+df_produtos_semelhantes = df_unpivot[df_unpivot['sku'] != df_unpivot['sku_casado']]
+
+# Calculando o valor do 75º percentil (último quartil) da coluna 'valor_venda'
+ultimo_quartil = df_produtos_semelhantes['similaridade'].quantile(0.75)
+
+# Filtrando os dados que estão no último quartil
+df_produtos_semelhantes = df_produtos_semelhantes[df_produtos_semelhantes['similaridade'] >= ultimo_quartil]
+
+print(ultimo_quartil)
+
+display(df_produtos_semelhantes)
+```
+
+### Resultados
+#### Produtos comprados em conjunto:
+```{python}
+#Produto e descrição
+produtos = pedidos_df[['sku', 'produto']].drop_duplicates(subset=['sku', 'produto'])
+
+
+produtos.head()
+```
+
+```{python}
+df_resultado_prod_conj = pd.merge(df_resultado, produtos, on='sku', how='left')
+
+df_resultado_prod_conj = df_resultado_prod_conj.merge(produtos, left_on='sku_casado', right_on='sku', how='left')
+
+df_resultado_prod_conj = df_resultado_prod_conj[['sku_x', 'sku_casado', 'contagem', 'produto_x','produto_y']].rename(columns={
+    'sku_x': 'sku',
+    'sku_casado': 'sku_casado',
+    'contagem': 'contagem',
+    'produto_x': 'produto',
+    'produto_y': 'produto_casado'
+})
+
+df_resultado_prod_conj.head()
+```
+
+#### Produtos Semelhantes
+```{python}
+df_resultado_prod_semel = pd.merge(df_produtos_semelhantes, produtos, on='sku', how='left')
+
+df_resultado_prod_semel = df_resultado_prod_semel.merge(produtos, left_on='sku_casado', right_on='sku', how='left')
+
+df_resultado_prod_semel = df_resultado_prod_semel[['sku_x', 'sku_casado', 'similaridade', 'produto_x','produto_y']].rename(columns={
+    'sku_x': 'sku',
+    'sku_casado': 'sku_casado',
+    'similaridade': 'similaridade',
+    'produto_x': 'produto',
+    'produto_y': 'produto_casado'
+})
+
+df_resultado_prod_semel.head()
+```
