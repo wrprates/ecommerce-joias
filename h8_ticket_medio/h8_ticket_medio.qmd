@@ -2,7 +2,7 @@
 title: "H8 - O ticket médio (por cliente por compra) aumenta em datas especiais/comemorativas"
 output: 
   html_document:
-    self_contained: true
+    embed-resources: true
 jupyter: python3
 ---
 
