@@ -3,3 +3,4 @@ _data/raw/*.xls
 _data/raw/*.xlsx
 .Rproj.user
 .DS_Store
+env
