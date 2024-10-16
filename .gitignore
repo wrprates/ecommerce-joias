@@ -3,4 +3,3 @@ _data/raw/*.xls
 _data/raw/*.xlsx
 .Rproj.user
 .DS_Store
-h3_compra_combinada\.ipynb_checkpoints
