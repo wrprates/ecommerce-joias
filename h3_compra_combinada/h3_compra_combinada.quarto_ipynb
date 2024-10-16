@@ -1,0 +1,307 @@
+{
+  "cells": [
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "---\n",
+        "title: \"H3 - Existe algum tipo de relação entre produtos que gera uma compra 'combinada'\"\n",
+        "output: \n",
+        "  html_document:\n",
+        "    self_contained: true\n",
+        "---\n",
+        "\n",
+        "\n",
+        "#### Importando Pacotes"
+      ],
+      "id": "8be037d5"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "import pandas as pd\n",
+        "from sklearn.metrics.pairwise import cosine_similarity"
+      ],
+      "id": "ac44d66b",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Lendo arquivos"
+      ],
+      "id": "92864f2f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "arquivo = \"../_data/clean/e_commerce_pedidos.csv\"\n",
+        "pedidos_df = pd.read_csv(arquivo)\n",
+        "\n",
+        "#Filtrando compras concluídas\n",
+        "pedidos_df = pedidos_df[pedidos_df['status'].isin(['Pagamento aprovado', 'Entregue'])]\n",
+        "\n",
+        "pedidos_df.head()"
+      ],
+      "id": "7d08f944",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Selecionando colunas relevantes\n",
+        "Esta tabela está a nível de sku. Assim temos para cada linha o sku que está incluso no pedido."
+      ],
+      "id": "28f172ce"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "pedidos = pedidos_df[['numero_pedido', 'sku']]\n",
+        "pedidos.head()"
+      ],
+      "id": "650cb40c",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Analisando produtos comprados em conjunto\n",
+        "#### Contabilizando produtos vendidos em conjunto"
+      ],
+      "id": "f4bbece3"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Realiza o auto join para encontrar os produtos vendidos juntos no mesmo pedido\n",
+        "df_joined = pedidos.merge(pedidos, on=\"numero_pedido\")\n",
+        "\n",
+        "# Filtra as linhas onde os produtos são diferentes\n",
+        "df_joined = df_joined[df_joined['sku_x'] != df_joined['sku_y']]\n",
+        "\n",
+        "# Agrupa e conta as combinações de produtos\n",
+        "#size conta linhas e inclui nulos, count conta valores e desconsidera nulos\n",
+        "df_resultado = df_joined.groupby(['sku_x', 'sku_y'])\\\n",
+        "                        .agg(contagem=('numero_pedido', 'size'))\\\n",
+        "                        .reset_index()\\\n",
+        "                        .sort_values(by=['contagem'], ascending=False)\n",
+        "\n",
+        "# Renomeia as colunas\n",
+        "df_resultado = df_resultado.rename(columns={'sku_x': 'sku', 'sku_y': 'sku_casado'})\n",
+        "\n",
+        "df_resultado.head()"
+      ],
+      "id": "33204222",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Similaridade de Produtos"
+      ],
+      "id": "65150039"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Tabela Pedido, Produto e Quantidade\n",
+        "similaridade_produtos = pedidos_df[['numero_pedido', 'sku', 'quantidade']]\n",
+        "\n",
+        "similaridade_produtos = similaridade_produtos.groupby(['numero_pedido', 'sku'])\\\n",
+        "                        .agg(quantidade=('quantidade', 'size'))\\\n",
+        "                        .reset_index()\\\n",
+        "                        .sort_values(by=['quantidade'], ascending=False)\n",
+        "\n",
+        "similaridade_produtos.head()                       "
+      ],
+      "id": "b793c167",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Criando uma matriz de utilidade onde:\n",
+        "# - Linhas representam produtos\n",
+        "# - Colunas representam pedidos\n",
+        "# - Valores representam a quantidade comprada\n",
+        "matriz_utilidade = similaridade_produtos.pivot_table(index='sku',\n",
+        "                                       values='quantidade',\n",
+        "                                       columns='numero_pedido',\n",
+        "                                       fill_value=0)\n",
+        "                                      \n",
+        "matriz_utilidade.head()"
+      ],
+      "id": "40b001a9",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Calculando a similaridade cosseno entre os produtos com base em seus padrões de compra.\n",
+        "matriz_similaridade = cosine_similarity(matriz_utilidade)\n",
+        "\n",
+        "print(matriz_similaridade)"
+      ],
+      "id": "4f384b45",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Convertendo a matriz de similaridade em um DataFrame\n",
+        "df_similaridade = pd.DataFrame(matriz_similaridade, index=matriz_utilidade.index, columns=matriz_utilidade.index)\n",
+        "\n",
+        "df_similaridade.head()"
+      ],
+      "id": "15e0faaf",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Adicionando uma coluna 'sku' ao DataFrame de similaridade para fácil referência.\n",
+        "df_similaridade['sku'] = df_similaridade.index\n",
+        "\n",
+        "# Reordenando as colunas para que a coluna 'sku' seja a primeira.\n",
+        "cols = ['sku'] + [col for col in df_similaridade if col != 'sku']\n",
+        "df_similaridade = df_similaridade[cols]\n",
+        "\n",
+        "df_similaridade.head()"
+      ],
+      "id": "317d2069",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "# Despivotando a tabela\n",
+        "df_unpivot = df_similaridade.melt(id_vars=['sku'], var_name='sku_casado', value_name='similaridade')\\\n",
+        "                             .sort_values(by=['similaridade'], ascending=False)\n",
+        "\n",
+        "#Filtrando produtos diferentes\n",
+        "df_produtos_semelhantes = df_unpivot[df_unpivot['sku'] != df_unpivot['sku_casado']]\n",
+        "\n",
+        "# Calculando o valor do 75º percentil (último quartil) da coluna 'valor_venda'\n",
+        "ultimo_quartil = df_produtos_semelhantes['similaridade'].quantile(0.75)\n",
+        "\n",
+        "# Filtrando os dados que estão no último quartil\n",
+        "df_produtos_semelhantes = df_produtos_semelhantes[df_produtos_semelhantes['similaridade'] >= ultimo_quartil]\n",
+        "\n",
+        "print(ultimo_quartil)\n",
+        "\n",
+        "display(df_produtos_semelhantes)"
+      ],
+      "id": "580d0c7d",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "### Resultados\n",
+        "#### Produtos comprados em conjunto:"
+      ],
+      "id": "75040a12"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "#Produto e descrição\n",
+        "produtos = pedidos_df[['sku', 'produto']].drop_duplicates(subset=['sku', 'produto'])\n",
+        "\n",
+        "\n",
+        "produtos.head()"
+      ],
+      "id": "fe27c111",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df_resultado_prod_conj = pd.merge(df_resultado, produtos, on='sku', how='left')\n",
+        "\n",
+        "df_resultado_prod_conj = df_resultado_prod_conj.merge(produtos, left_on='sku_casado', right_on='sku', how='left')\n",
+        "\n",
+        "df_resultado_prod_conj = df_resultado_prod_conj[['sku_x', 'sku_casado', 'contagem', 'produto_x','produto_y']].rename(columns={\n",
+        "    'sku_x': 'sku',\n",
+        "    'sku_casado': 'sku_casado',\n",
+        "    'contagem': 'contagem',\n",
+        "    'produto_x': 'produto',\n",
+        "    'produto_y': 'produto_casado'\n",
+        "})\n",
+        "\n",
+        "df_resultado_prod_conj.head()"
+      ],
+      "id": "a441eb75",
+      "execution_count": null,
+      "outputs": []
+    },
+    {
+      "cell_type": "markdown",
+      "metadata": {},
+      "source": [
+        "#### Produtos Semelhantes"
+      ],
+      "id": "3564e47f"
+    },
+    {
+      "cell_type": "code",
+      "metadata": {},
+      "source": [
+        "df_resultado_prod_semel = pd.merge(df_produtos_semelhantes, produtos, on='sku', how='left')\n",
+        "\n",
+        "df_resultado_prod_semel = df_resultado_prod_semel.merge(produtos, left_on='sku_casado', right_on='sku', how='left')\n",
+        "\n",
+        "df_resultado_prod_semel = df_resultado_prod_semel[['sku_x', 'sku_casado', 'similaridade', 'produto_x','produto_y']].rename(columns={\n",
+        "    'sku_x': 'sku',\n",
+        "    'sku_casado': 'sku_casado',\n",
+        "    'similaridade': 'similaridade',\n",
+        "    'produto_x': 'produto',\n",
+        "    'produto_y': 'produto_casado'\n",
+        "})\n",
+        "\n",
+        "df_resultado_prod_semel.head()"
+      ],
+      "id": "8c47414f",
+      "execution_count": null,
+      "outputs": []
+    }
+  ],
+  "metadata": {
+    "kernelspec": {
+      "display_name": "Python 3",
+      "language": "python",
+      "name": "python3"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 5
+}
