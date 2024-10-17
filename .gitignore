@@ -3,3 +3,6 @@ _data/raw/*.xls
 _data/raw/*.xlsx
 .Rproj.user
 .DS_Store
+env
+h8_ticket_medio/h8_ticket_medio_files
+h8_ticket_medio_files
