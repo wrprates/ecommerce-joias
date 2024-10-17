@@ -9,14 +9,14 @@ jupyter: python3
 ## Carregando os dados necessários
 
 ```{python}
-from pandas import DataFrame, read_csv, to_datetime, concat
+from pandas import read_csv, to_datetime
 from os import path
 
-datadir = 'C:/Users/User/Desktop/data_science/mentoria_data_mundo/projeto_ecommerce/_data/clean'
+datadir = '/home/iagonmic/data_science/ecommerce-joias/_data/clean'
 
-df_clientes = read_csv(path.join(datadir, 'e_commerce_clientes.csv'))
-df_carrinhos = read_csv(path.join(datadir, 'e_commerce_carrinhos.csv'))
-df_pedidos = read_csv(path.join(datadir, 'e_commerce_pedidos.csv'))
+df_clientes = read_csv(path.join(datadir, 'e_commerce_clientes.csv'), decimal=',')
+df_carrinhos = read_csv(path.join(datadir, 'e_commerce_carrinhos.csv'), decimal=',')
+df_pedidos = read_csv(path.join(datadir, 'e_commerce_pedidos.csv'), decimal=',')
 
 df_pedidos.drop(columns=['Unnamed: 0']).reset_index(drop=True).head()
 ```
