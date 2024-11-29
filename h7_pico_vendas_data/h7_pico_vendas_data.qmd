@@ -6,3 +6,5 @@ output:
 ---
 
 ## Escreva o conteúdo aqui
+
+library(readxl)
